@@ -1,0 +1,149 @@
+{
+  "description": "Incoming Flow",
+  "states": [
+    {
+      "name": "Trigger",
+      "type": "trigger",
+      "transitions": [
+        {
+          "event": "incomingMessage"
+        },
+        {
+          "next": "OfferChoice",
+          "event": "incomingCall"
+        },
+        {
+          "event": "incomingConversationMessage"
+        },
+        {
+          "event": "incomingRequest"
+        },
+        {
+          "event": "incomingParent"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": -10
+        }
+      }
+    },
+    {
+      "name": "OfferChoice",
+      "type": "gather-input-on-call",
+      "transitions": [
+        {
+          "next": "CheckChoice",
+          "event": "keypress"
+        },
+        {
+          "next": "ReachFreePBX",
+          "event": "timeout"
+        },
+        {
+          "next": "ReachFreePBX",
+          "event": "speech"
+        }
+      ],
+      "properties": {
+        "voice": "Polly.Lupe",
+        "speech_timeout": "auto",
+        "offset": {
+          "x": 200,
+          "y": 200
+        },
+        "loop": 1,
+        "finish_on_key": "",
+        "say": "Para hablar con un agente con traducción en vivo, oprima 1. Permanezca en la línea para comunicarse como de costumbre.",
+        "language": "es-US",
+        "stop_gather": true,
+        "gather_language": "es-US",
+        "profanity_filter": "true",
+        "timeout": 4,
+        "number_of_digits": 1
+      }
+    },
+    {
+      "name": "CheckChoice",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "ReachFreePBX",
+          "event": "noMatch"
+        },
+        {
+          "next": "AppRedirect",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.OfferChoice.Digits}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.OfferChoice.Digits}}",
+        "offset": {
+          "x": 200,
+          "y": 480
+        }
+      }
+    },
+    {
+      "name": "AppRedirect",
+      "type": "add-twiml-redirect",
+      "transitions": [
+        {
+          "event": "return"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 500,
+          "y": 760
+        },
+        "method": "POST",
+        "url": "https://[your-ngrok-domain]/incoming-call?lang=spanish",
+        "timeout": "14400"
+      }
+    },
+    {
+      "name": "ReachFreePBX",
+      "type": "connect-call-to",
+      "transitions": [
+        {
+          "event": "callCompleted"
+        },
+        {
+          "event": "hangup"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -80,
+          "y": 760
+        },
+        "noun": "sip",
+        "sip_endpoint": "sip:{{trigger.call.To}}@206.189.206.145",
+        "caller_id": "{{contact.channel.address}}",
+        "timeout": 30
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  }
+}

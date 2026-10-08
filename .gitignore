@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.dist/
+dist/
+build/
+.env
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.log
+.DS_Store
+ngrok.exe
